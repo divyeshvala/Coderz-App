@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/tag_view"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/card_margin"
+    android:elevation="3dp"
+    card_view:cardBackgroundColor="#03A9F4"
+    card_view:cardCornerRadius="24dp">
+
+    <TextView
+        android:id="@+id/tag_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:paddingHorizontal="8dp"
+        android:textSize="15sp"
+        android:textColor="#fff"
+        android:text="Microsoft"
+        />
+
+</androidx.cardview.widget.CardView>
+

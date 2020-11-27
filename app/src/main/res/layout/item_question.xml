@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/card_margin"
+    android:elevation="3dp"
+    card_view:cardBackgroundColor="#fff"
+    card_view:cardCornerRadius="@dimen/card_radius">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/card_title_padding"
+            android:paddingRight="@dimen/card_title_padding"
+            android:paddingTop="@dimen/card_title_padding"
+            android:textColor="@color/card_title"
+            android:textSize="@dimen/card_title_size"
+            android:text="Traffic Light Controlled Intersection"
+            />
+
+        <co.lujun.androidtagview.TagContainerLayout
+            android:id="@+id/tag_container_layout"
+            android:layout_below="@id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp"
+            android:padding="10dp"
+            />
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>
+

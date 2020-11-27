@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "520728300108",
+    "firebase_url": "https://demux-38c7e.firebaseio.com",
+    "project_id": "demux-38c7e",
+    "storage_bucket": "demux-38c7e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:520728300108:android:c704a1f20916603533c2e9",
+        "android_client_info": {
+          "package_name": "com.example.demux"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "520728300108-6u8hfeic2u0gjv5h6t763r8kt37cepne.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.demux",
+            "certificate_hash": "08fbc15a47c02e8d529af95d1ce3df0c92c81507"
+          }
+        },
+        {
+          "client_id": "520728300108-ugaj7u0p26frd0qchnkamvvimsedvl4r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfy3KIeK3iJo1awP3KeKcQEEYOm3QIuEg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "520728300108-ugaj7u0p26frd0qchnkamvvimsedvl4r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

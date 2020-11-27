@@ -1,0 +1,8 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.Demux" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <item name="colorPrimary">#034880</item>
+        <item name="colorPrimaryDark">#01192C</item>
+        <item name="colorAccent">#9DDBF7</item>
+    </style>
+</resources>
