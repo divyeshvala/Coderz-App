@@ -16,15 +16,28 @@ public class Constants
     public Constants()
     {
         // Map
-        colorMap.put("Google", Color.parseColor("#ff0000"));
-        colorMap.put("Facebook", Color.parseColor("#F93004"));
-        colorMap.put("SAP Labs", Color.parseColor("#0823F6"));
-        colorMap.put("Visa", Color.parseColor("#070F4E"));
-        colorMap.put("Amazon", Color.parseColor("#4A4B4F"));
-        colorMap.put("Demux Academy", Color.parseColor("#F9D5CD"));
-
-        colorMap.put("Goldman", Color.parseColor("#F9D5CD"));
-        colorMap.put("DE Shaw", Color.parseColor("#F9D5CD"));
+        colorMap.put("Google", Color.parseColor("#fe4a49"));
+        colorMap.put("Facebook", Color.parseColor("#2ab7ca"));
+        colorMap.put("SAP Labs", Color.parseColor("#A7226E"));
+        colorMap.put("Visa", Color.parseColor("#3d2352"));
+        colorMap.put("Amazon", Color.parseColor("#8d5524"));
+        colorMap.put("Demux Academy", Color.parseColor("#011f4b"));
+        colorMap.put("Goldman", Color.parseColor("#03396c"));
+        colorMap.put("DE Shaw", Color.parseColor("#64a1f4"));
+        colorMap.put("Uber", Color.parseColor("#6497b1"));
+        colorMap.put("Cisco", Color.parseColor("#3da4ab"));
+        colorMap.put("Salesforce", Color.parseColor("#f6cd61"));
+        colorMap.put("TCS", Color.parseColor("#fe8a71"));
+        colorMap.put("Infosys", Color.parseColor("#009688"));
+        colorMap.put("College", Color.parseColor("#54b2a9"));
+        colorMap.put("Software Developer", Color.parseColor("#7bc043"));
+        colorMap.put("Front End Developer", Color.parseColor("#d0e1f9"));
+        colorMap.put("Full-time", Color.parseColor("#283655"));
+        colorMap.put("Internship", Color.parseColor("#e0a899"));
+        colorMap.put("Oracle", Color.parseColor("#dfa290"));
+        colorMap.put("Barco", Color.parseColor("#A8E6CE"));
+        colorMap.put("Paytm", Color.parseColor("#355C7D"));
+        colorMap.put("Microsoft", Color.parseColor("#F8B195"));
 
         for(Map.Entry<String, Integer> entry : colorMap.entrySet())
         {

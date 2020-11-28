@@ -25,6 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="0dp"
         android:padding="10dp"
+        android:scrollbars="vertical"
         />
 
     <RelativeLayout

@@ -33,7 +33,7 @@ public class ListAdapter extends RecyclerView.Adapter< ListAdapter.QuestionListV
 
     public class QuestionListViewHolder extends RecyclerView.ViewHolder
     {
-        private TextView title;
+        private TextView title, frequency;
         private TagContainerLayout tagLayout;
         private CardView card;
 
@@ -42,6 +42,7 @@ public class ListAdapter extends RecyclerView.Adapter< ListAdapter.QuestionListV
             super(view);
             title = view.findViewById(R.id.title);
             tagLayout = view.findViewById(R.id.tag_container_layout);
+            frequency = view.findViewById(R.id.frequency);
             card = view.findViewById(R.id.card_view);
         }
     }
@@ -58,7 +59,7 @@ public class ListAdapter extends RecyclerView.Adapter< ListAdapter.QuestionListV
     {
         //questionListViewHolder.setIsRecyclable(false);
         questionListViewHolder.title.setText(questionList.get(i).getTitle());
-
+        questionListViewHolder.frequency.setText(String.valueOf(questionList.get(i).getFrequency()));
         String tags = questionList.get(i).getTags();
         List<String> tagsList = Arrays.asList(tags.split("\\s*,\\s*"));
 

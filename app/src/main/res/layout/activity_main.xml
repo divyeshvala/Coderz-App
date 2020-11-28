@@ -4,16 +4,43 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#E0DEDE"
+    android:background="#DEDEDE"
     tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#EAF3F9"
+        android:paddingStart="20dp"
+        android:paddingEnd="10dp"
+        android:layout_marginTop="2dp"
+        >
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.6"
+            android:layout_height="wrap_content"
+            android:text="Questions &amp; Tags"
+            android:textColor="#162266"
+            />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.4"
+            android:layout_height="wrap_content"
+            android:text="Frequency"
+            android:textAlignment="textEnd"
+            android:paddingEnd="10dp"
+            android:textColor="#162266"
+            />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
+        android:layout_below="@id/header"
         android:layout_above="@id/progress_bar"
-        android:layout_marginTop="5dp"
         />
 
 <!--    <ProgressBar-->
@@ -24,6 +51,16 @@
 <!--        android:layout_centerInParent="true"-->
 <!--        android:indeterminateTint="#2846EB"-->
 <!--        />-->
+
+    <TextView
+        android:id="@+id/id_no_results"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No results found."
+        android:layout_centerInParent="true"
+        android:textSize="17sp"
+        android:visibility="gone"
+        />
 
     <ProgressBar
         android:id="@+id/progress_bar"
