@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,7 +16,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
@@ -29,14 +27,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import co.lujun.androidtagview.ColorFactory;
 import co.lujun.androidtagview.TagContainerLayout;
 import co.lujun.androidtagview.TagView;
 
-import static com.google.android.gms.common.internal.safeparcel.SafeParcelable.NULL;
-
-public class MainActivity extends AppCompatActivity
+// TODO: No results found feature
+// TODO: tag colors, frequency showing, order by frequency.
+// TODO: Data upload
+public class MainActivity extends AppCompatActivity implements FilterInterface
 {
     private ListAdapter listAdapter;
     private ArrayList<Question> questionsList;
@@ -45,7 +43,9 @@ public class MainActivity extends AppCompatActivity
     private static String searchQuery;
     private ProgressBar progressBar, initialProgressBar;
     private ArrayList<String> filteredTagsList;
-    private static int questionChunkSize;
+    private FilterInterface listener;
+
+    private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("questions");
 
     @RequiresApi(api = Build.VERSION_CODES.M)  // todo
     @Override
@@ -57,24 +57,25 @@ public class MainActivity extends AppCompatActivity
         Constants constants = new Constants();
 
         progressBar = findViewById(R.id.progress_bar);
-        initialProgressBar = findViewById(R.id.initial_progress_bar);
         questionsList = new ArrayList<>();
         filteredTagsList = new ArrayList<>();
         searchQuery = "";
-        questionChunkSize = 0;
         lastVisibleItem = 0;
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
-        listAdapter = new ListAdapter(this, questionsList);
+        listAdapter = new ListAdapter(this, questionsList, this);
         recyclerView.setAdapter(listAdapter);
 
         FloatingActionButton filter = findViewById(R.id.id_filter);
         filter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                filteredTagsList.clear();
+
                 BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(
                         MainActivity.this, R.style.BottomSheetDialogTheme
                 );
@@ -89,7 +90,6 @@ public class MainActivity extends AppCompatActivity
                 tagContainer.setTheme(ColorFactory.RANDOM);
                 bottomSheetView.findViewById(R.id.filter_tag_container_layout).setBackgroundColor(Color.WHITE);
                 tagContainer.setTagTextSize(48);
-                tagContainer.setTagTextColor(Color.RED);
                 tagContainer.setIsTagViewClickable(true);
                 tagContainer.setIsTagViewSelectable(true);
 
@@ -103,11 +103,11 @@ public class MainActivity extends AppCompatActivity
                         List<Integer> selectedPositions = tagContainer.getSelectedTagViewPositions();
                         if (selectedPositions.contains(position)) {
                             tagContainer.deselectTagView(position);
-                            filteredTagsList.add(text);
+                            filteredTagsList.remove(text.toLowerCase());
                         }
                         else {
                             tagContainer.selectTagView(position);
-                            filteredTagsList.remove(text);
+                            filteredTagsList.add(text.toLowerCase());
                         }
                         Log.i("Filter", "selected-positions:" + selectedPositions.toString());
                     }
@@ -123,9 +123,15 @@ public class MainActivity extends AppCompatActivity
 
                 bottomSheetView.findViewById(R.id.id_apply_filter_btn).setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
-
+                    public void onClick(View v)
+                    {
                         bottomSheetDialog.dismiss();
+                        progressBar.setVisibility(View.VISIBLE);
+                        searchQuery = "";
+                        lastVisibleItem = 0;
+                        loadFirstTenQuestions();
+                        questionsList.clear();
+                        listAdapter.notifyDataSetChanged();
                     }
                 });
 
@@ -134,22 +140,17 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                loadFirstTenQuestions();
-            }
-        }, 1000);
+        loadFirstTenQuestions();
 
         recyclerView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
             @Override
             public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
             {
                 currentVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
-                if(currentVisibleItem==lastVisibleItem)
+                Log.i("MAin", ""+currentVisibleItem+", "+lastVisibleItem);
+                if(currentVisibleItem+1>=lastVisibleItem)
                 {
                     progressBar.setVisibility(View.VISIBLE);
-                    lastVisibleItem = lastVisibleItem + questionChunkSize;
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -161,38 +162,76 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    public void applyFilter(String tag)
+    {
+        questionsList.clear();
+        listAdapter.notifyDataSetChanged();
+        Log.i("Main", "Filter clicked : "+tag);
+        filteredTagsList.clear();
+        filteredTagsList.add(tag.toLowerCase());
+        Log.i("Main", ""+filteredTagsList.size());
+        progressBar.setVisibility(View.VISIBLE);
+        searchQuery = "";
+        lastVisibleItem = 0;
+        loadFirstTenQuestions();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.i("Main", "question size : "+questionsList.size());
+            }
+        }, 3000);
+    }
+
+    private void displayQuestions(DataSnapshot dataSnapshot)
+    {
+        Log.i("Main", "Inside display questions. ");
+        long count = dataSnapshot.getChildrenCount();
+        for (DataSnapshot question : dataSnapshot.getChildren())
+        {
+            lastFetchedQuestionId = question.getKey(); ////HERE WE ARE SAVING THE LAST POST_ID FROM URS POST
+
+            String title = question.child("title").getValue(String.class);
+            String tags = question.child("tags").getValue(String.class);
+            int frequency = question.child("frequency").getValue(Integer.class);
+
+            if(!filteredTagsList.isEmpty())
+            {
+                String tagsLowerCase = tags.toLowerCase();
+                for(String tag : filteredTagsList)
+                {
+                    if(tagsLowerCase.contains(tag))
+                    {
+                        questionsList.add(new Question(title, "", tags, frequency));
+                        lastVisibleItem++;
+                        listAdapter.notifyDataSetChanged();
+                        break;
+                    }
+                }
+            }
+            else if (tags != null && title != null && (title.toLowerCase().contains(searchQuery.toLowerCase()) || tags.toLowerCase().contains(searchQuery.toLowerCase())))
+            {
+                questionsList.add(new Question(title, "", tags, frequency));
+                lastVisibleItem++;
+                listAdapter.notifyDataSetChanged();
+            }
+
+            count--;
+            if( count == 0 )
+            {
+                progressBar.setVisibility(View.GONE);
+            }
+        }
+    }
+
     private void loadNextTenQuestions()
     {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("questions");
-
         databaseReference.orderByKey().startAt(lastFetchedQuestionId).limitToFirst(10).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot)
             {
-                long count = dataSnapshot.getChildrenCount();
-                for (DataSnapshot question : dataSnapshot.getChildren())
-                {
-                    lastFetchedQuestionId = question.getKey(); ////HERE WE ARE SAVING THE LAST POST_ID FROM URS POST
-
-                    String title = question.child("title").getValue(String.class);
-                    String tags = question.child("tags").getValue(String.class);
-                    int frequency = question.child("frequency").getValue(Integer.class);
-
-                    if (tags != null && title != null && (title.contains(searchQuery) || tags.contains(searchQuery)))
-                    {
-                        questionsList.add(new Question(title, "", tags, frequency));
-                        questionChunkSize++;
-                        lastVisibleItem++;
-                    }
-                    count--;
-                    if( count == 0 )
-                    {
-                        progressBar.setVisibility(View.GONE);
-                    }
-                    listAdapter.notifyDataSetChanged();
-                }
+                Log.i("Main", "Inside loadN questions. ");
+                displayQuestions(dataSnapshot);
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
@@ -200,39 +239,15 @@ public class MainActivity extends AppCompatActivity
 
     private void loadFirstTenQuestions()
     {
-        initialProgressBar.setVisibility(View.VISIBLE);
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("questions");
-
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-        @Override
-        public void onDataChange(@NonNull DataSnapshot dataSnapshot)
-        {
-            long count = dataSnapshot.getChildrenCount();
-            for (DataSnapshot question : dataSnapshot.getChildren())
+        databaseReference.orderByKey().limitToFirst(10).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot)
             {
-                lastFetchedQuestionId = question.getKey(); ////HERE WE ARE SAVING THE LAST POST_ID FROM URS POST
-
-                String title = question.child("title").getValue(String.class);
-                String tags = question.child("tags").getValue(String.class);
-                int frequency = question.child("frequency").getValue(Integer.class);
-
-                if (tags != null && title != null && (title.contains(searchQuery) || tags.contains(searchQuery)))
-                {
-                    questionsList.add(new Question(title, "", tags, frequency));
-                    questionChunkSize++;
-                    lastVisibleItem++;
-                }
-                count--;
-                if(count==0)
-                {
-                    initialProgressBar.setVisibility(View.GONE);
-                }
-                listAdapter.notifyDataSetChanged();
+                Log.i("Main", "Inside loadF questions. ");
+                displayQuestions(dataSnapshot);
             }
-        }
-
-        @Override
-        public void onCancelled(@NonNull DatabaseError databaseError) { }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
     }
 
@@ -247,11 +262,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onQueryTextSubmit(String query)
             {
-//                Log.i("MainActivity", "Search query : "+query);
-//                searchQuery = query;
-//                questionsList.clear();
-//                listAdapter.notifyDataSetChanged();
-//                loadFirstTenQuestions();
                 return false;
             }
 
@@ -259,9 +269,11 @@ public class MainActivity extends AppCompatActivity
             public boolean onQueryTextChange(String newText)
             {
                 searchQuery = newText;
+                lastVisibleItem = 0;
+                filteredTagsList.clear();
+                loadFirstTenQuestions();
                 questionsList.clear();
                 listAdapter.notifyDataSetChanged();
-                loadFirstTenQuestions();
                 return false;
             }
         });

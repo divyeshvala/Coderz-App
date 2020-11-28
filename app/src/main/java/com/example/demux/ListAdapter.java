@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -17,16 +16,19 @@ import java.util.List;
 
 import co.lujun.androidtagview.ColorFactory;
 import co.lujun.androidtagview.TagContainerLayout;
+import co.lujun.androidtagview.TagView;
 
 public class ListAdapter extends RecyclerView.Adapter< ListAdapter.QuestionListViewHolder >
 {
     private ArrayList<Question> questionList;
     private Context context;
+    private FilterInterface listener;
 
-    public ListAdapter(Context context, ArrayList<Question> questionList)
+    public ListAdapter(Context context, ArrayList<Question> questionList, FilterInterface listener)
     {
         this.questionList = questionList;
         this.context = context;
+        this.listener = listener;
     }
 
     public class QuestionListViewHolder extends RecyclerView.ViewHolder
@@ -66,6 +68,22 @@ public class ListAdapter extends RecyclerView.Adapter< ListAdapter.QuestionListV
 //        questionListViewHolder.tagLayout.setTagBackgroundColor(R.color.colorBlue);
 //        questionListViewHolder.tagLayout.setTagTextColor(R.color.colorWhite);
 //        questionListViewHolder.tagLayout.setTagBorderColor(Color.TRANSPARENT);
+
+        questionListViewHolder.tagLayout.setIsTagViewClickable(true);
+
+        questionListViewHolder.tagLayout.setOnTagClickListener(new TagView.OnTagClickListener() {
+            @Override
+            public void onTagClick(int position, String text) {
+                listener.applyFilter(text);
+            }
+
+            @Override
+            public void onTagLongClick(int position, String text) { }
+            @Override
+            public void onSelectedTagDrag(int position, String text) { }
+            @Override
+            public void onTagCrossClick(int position) { }
+        });
 
         questionListViewHolder.tagLayout.setTags(tagsList, Constants.getTagColorsList(tagsList));
 
