@@ -6,15 +6,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -22,7 +27,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import co.lujun.androidtagview.ColorFactory;
+import co.lujun.androidtagview.TagContainerLayout;
+import co.lujun.androidtagview.TagView;
 
 import static com.google.android.gms.common.internal.safeparcel.SafeParcelable.NULL;
 
@@ -34,6 +44,8 @@ public class MainActivity extends AppCompatActivity
     private static String lastFetchedQuestionId;
     private static String searchQuery;
     private ProgressBar progressBar, initialProgressBar;
+    private ArrayList<String> filteredTagsList;
+    private static int questionChunkSize;
 
     @RequiresApi(api = Build.VERSION_CODES.M)  // todo
     @Override
@@ -42,10 +54,16 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Constants constants = new Constants();
+
         progressBar = findViewById(R.id.progress_bar);
         initialProgressBar = findViewById(R.id.initial_progress_bar);
         questionsList = new ArrayList<>();
+        filteredTagsList = new ArrayList<>();
         searchQuery = "";
+        questionChunkSize = 0;
+        lastVisibleItem = 0;
+
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -53,7 +71,69 @@ public class MainActivity extends AppCompatActivity
         listAdapter = new ListAdapter(this, questionsList);
         recyclerView.setAdapter(listAdapter);
 
-        lastVisibleItem = 9;
+        FloatingActionButton filter = findViewById(R.id.id_filter);
+        filter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(
+                        MainActivity.this, R.style.BottomSheetDialogTheme
+                );
+
+                View bottomSheetView = LayoutInflater.from(getApplicationContext())
+                        .inflate(
+                                R.layout.layout_bottom_sheet,
+                                findViewById(R.id.bottom_sheet_container)
+                        );
+
+                TagContainerLayout tagContainer = bottomSheetView.findViewById(R.id.filter_tag_container_layout);
+                tagContainer.setTheme(ColorFactory.RANDOM);
+                bottomSheetView.findViewById(R.id.filter_tag_container_layout).setBackgroundColor(Color.WHITE);
+                tagContainer.setTagTextSize(48);
+                tagContainer.setTagTextColor(Color.RED);
+                tagContainer.setIsTagViewClickable(true);
+                tagContainer.setIsTagViewSelectable(true);
+
+                tagContainer.setTags(Constants.getTagsList(), Constants.getTagColorsList());
+
+                tagContainer.setOnTagClickListener(new TagView.OnTagClickListener() {
+
+                    @Override
+                    public void onTagClick(int position, String text) {
+                        Log.i("Filter", "" + position);
+                        List<Integer> selectedPositions = tagContainer.getSelectedTagViewPositions();
+                        if (selectedPositions.contains(position)) {
+                            tagContainer.deselectTagView(position);
+                            filteredTagsList.add(text);
+                        }
+                        else {
+                            tagContainer.selectTagView(position);
+                            filteredTagsList.remove(text);
+                        }
+                        Log.i("Filter", "selected-positions:" + selectedPositions.toString());
+                    }
+
+                    @Override
+                    public void onTagLongClick(int position, String text) { }
+                    @Override
+                    public void onSelectedTagDrag(int position, String text) { }
+                    @Override
+                    public void onTagCrossClick(int position) {
+                    }
+                });
+
+                bottomSheetView.findViewById(R.id.id_apply_filter_btn).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        bottomSheetDialog.dismiss();
+                    }
+                });
+
+                bottomSheetDialog.setContentView(bottomSheetView);
+                bottomSheetDialog.show();
+            }
+        });
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -69,7 +149,7 @@ public class MainActivity extends AppCompatActivity
                 if(currentVisibleItem==lastVisibleItem)
                 {
                     progressBar.setVisibility(View.VISIBLE);
-                    lastVisibleItem = lastVisibleItem + 10;
+                    lastVisibleItem = lastVisibleItem + questionChunkSize;
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -101,6 +181,8 @@ public class MainActivity extends AppCompatActivity
                     if (tags != null && title != null && (title.contains(searchQuery) || tags.contains(searchQuery)))
                     {
                         questionsList.add(new Question(title, "", tags, frequency));
+                        questionChunkSize++;
+                        lastVisibleItem++;
                     }
                     count--;
                     if( count == 0 )
@@ -121,7 +203,7 @@ public class MainActivity extends AppCompatActivity
         initialProgressBar.setVisibility(View.VISIBLE);
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("questions");
 
-        databaseReference.orderByKey().limitToFirst(10).addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot)
         {
@@ -137,6 +219,8 @@ public class MainActivity extends AppCompatActivity
                 if (tags != null && title != null && (title.contains(searchQuery) || tags.contains(searchQuery)))
                 {
                     questionsList.add(new Question(title, "", tags, frequency));
+                    questionChunkSize++;
+                    lastVisibleItem++;
                 }
                 count--;
                 if(count==0)

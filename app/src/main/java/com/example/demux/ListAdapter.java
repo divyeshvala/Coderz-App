@@ -66,7 +66,8 @@ public class ListAdapter extends RecyclerView.Adapter< ListAdapter.QuestionListV
 //        questionListViewHolder.tagLayout.setTagBackgroundColor(R.color.colorBlue);
 //        questionListViewHolder.tagLayout.setTagTextColor(R.color.colorWhite);
 //        questionListViewHolder.tagLayout.setTagBorderColor(Color.TRANSPARENT);
-        questionListViewHolder.tagLayout.setTags(tagsList);
+
+        questionListViewHolder.tagLayout.setTags(tagsList, Constants.getTagColorsList(tagsList));
 
         questionListViewHolder.card.setOnClickListener(new View.OnClickListener() {
             @Override
