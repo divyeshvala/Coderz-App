@@ -33,11 +33,10 @@ import co.lujun.androidtagview.ColorFactory;
 import co.lujun.androidtagview.TagContainerLayout;
 import co.lujun.androidtagview.TagView;
 
-// TODO: static file problem in filter.
-// TODO: on back pressed
 // TODO: order by frequency.
 // TODO: Data upload
 // TODO: proper design pattern.
+// TODO: Search problem - optional.
 
 public class MainActivity extends AppCompatActivity implements FilterInterface
 {
@@ -51,8 +50,7 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
     private TextView noResults;
     private static boolean isEndOfDatabase;
     private LinearLayoutManager layoutManager;
-    private boolean isDatabaseLocked;
-    private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("questions");
+    final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("questions");
 
     @RequiresApi(api = Build.VERSION_CODES.M)  // todo
     @Override
@@ -70,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
         searchQuery = "";
         lastVisibleItem = 0;
         isEndOfDatabase = false;
-        isDatabaseLocked = false;
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         layoutManager = new LinearLayoutManager(this);
@@ -349,6 +346,16 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
                 Log.i("Main", "question size : "+questionsList.size());
             }
         }, 3000);
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        if(!searchQuery.isEmpty() || !filteredTagsList.isEmpty())
+        {
+            finish();
+            startActivity(getIntent());
+        }
     }
 
     // TODO: Remove it later
