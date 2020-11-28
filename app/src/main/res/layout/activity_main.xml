@@ -6,14 +6,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#DEDEDE"
     tools:context=".MainActivity">
-
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#EAF3F9"
         android:paddingStart="20dp"
-        android:paddingEnd="10dp"
+        android:paddingEnd="5dp"
         android:layout_marginTop="2dp"
         >
         <TextView
@@ -29,7 +28,6 @@
             android:layout_height="wrap_content"
             android:text="Frequency"
             android:textAlignment="textEnd"
-            android:paddingEnd="10dp"
             android:textColor="#162266"
             />
     </LinearLayout>

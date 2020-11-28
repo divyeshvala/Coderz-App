@@ -233,31 +233,58 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
                         findViewById(R.id.bottom_sheet_container)
                 );
 
-        TagContainerLayout tagContainer = bottomSheetView.findViewById(R.id.filter_tag_container_layout);
-        tagContainer.setTheme(ColorFactory.RANDOM);
-        bottomSheetView.findViewById(R.id.filter_tag_container_layout).setBackgroundColor(Color.TRANSPARENT);
-        tagContainer.setTagTextSize(48);
-        tagContainer.setIsTagViewClickable(true);
-        tagContainer.setIsTagViewSelectable(true);
+        TagContainerLayout tagContainerGeneral = bottomSheetView.findViewById(R.id.filter_tag_container_layout_general);
+        tagContainerGeneral.setTheme(ColorFactory.RANDOM);
+        tagContainerGeneral.setBackgroundColor(Color.TRANSPARENT);
+        tagContainerGeneral.setTagTextSize(48);
+        tagContainerGeneral.setIsTagViewClickable(true);
+        tagContainerGeneral.setIsTagViewSelectable(true);
 
-        tagContainer.setTags(Constants.getTagsList(), Constants.getTagColorsList());
+        TagContainerLayout tagContainerCompanies = bottomSheetView.findViewById(R.id.filter_tag_container_layout_companies);
+        tagContainerCompanies.setTheme(ColorFactory.RANDOM);
+        tagContainerCompanies.setBackgroundColor(Color.TRANSPARENT);
+        tagContainerCompanies.setTagTextSize(48);
+        tagContainerCompanies.setIsTagViewClickable(true);
+        tagContainerCompanies.setIsTagViewSelectable(true);
 
-        tagContainer.setOnTagClickListener(new TagView.OnTagClickListener() {
+        tagContainerGeneral.setTags(Constants.getGeneralTagsList(), Constants.getGeneralTagColorsList());
+        tagContainerCompanies.setTags(Constants.getCompanyTagsList(), Constants.getCompanyTagColorsList());
 
+        tagContainerGeneral.setOnTagClickListener(new TagView.OnTagClickListener() {
             @Override
             public void onTagClick(int position, String text) {
-                Log.i("Filter", "" + position);
-                List<Integer> selectedPositions = tagContainer.getSelectedTagViewPositions();
+                List<Integer> selectedPositions = tagContainerGeneral.getSelectedTagViewPositions();
                 if (selectedPositions.contains(position)) {
-                    tagContainer.deselectTagView(position);
+                    tagContainerGeneral.deselectTagView(position);
                     filteredTagsList.remove(text.toLowerCase());
                 }
                 else {
-                    tagContainer.selectTagView(position);
+                    tagContainerGeneral.selectTagView(position);
                     filteredTagsList.add(text.toLowerCase());
                 }
             }
+            @Override
+            public void onTagLongClick(int position, String text) { }
+            @Override
+            public void onSelectedTagDrag(int position, String text) { }
+            @Override
+            public void onTagCrossClick(int position) { }
+        });
 
+        tagContainerCompanies.setOnTagClickListener(new TagView.OnTagClickListener() {
+            @Override
+            public void onTagClick(int position, String text) {
+                Log.i("Filter", "" + position);
+                List<Integer> selectedPositions = tagContainerCompanies.getSelectedTagViewPositions();
+                if (selectedPositions.contains(position)) {
+                    tagContainerCompanies.deselectTagView(position);
+                    filteredTagsList.remove(text.toLowerCase());
+                }
+                else {
+                    tagContainerCompanies.selectTagView(position);
+                    filteredTagsList.add(text.toLowerCase());
+                }
+            }
             @Override
             public void onTagLongClick(int position, String text) { }
             @Override
