@@ -8,3 +8,13 @@ Home Page | Filter Sheet | Search Bar
 :-------------------------:|:-------------------------:|:-------------------------:
 ![Home Page](https://github.com/divyeshvala/demux/blob/main/screenshots/home.jpg?raw=true "Home Page")|![Filter Sheet](https://github.com/divyeshvala/demux/blob/main/screenshots/filter.jpg?raw=true "Filter Sheet")|![Search Bar](https://github.com/divyeshvala/demux/blob/main/screenshots/search.jpg?raw=true "Search Bar")
 
+### Source of the questions data
+* Web scrapping (BeautifulSoup) has been used to scrap data from Leetcode and it has been uploaded to my firebase realtime database. Currently there are around 250 questions in firebase database.
+* So now this app is loading questions from firebase realtime database.
+* Each question contains following data : title, id, company tags, topics, difficulty level, frequency and description(in HTML format).
+
+### Current Features
+1. **Display coding questions** - Questions are being displayed from firebase realtime database.
+2. **Company & topic tags** - There are company & topic tags on the question which are clickable. On clicking tag, relevant questions will be displayed. Each company has specific colored tag for better user experience.
+3. **Filter** - Questions can be filtered based on single or mutliple companies and other general tags like College, Offcampus, Internship, Full-time etc.
+4. **Search** - Questions can be searched based on title and tags.
