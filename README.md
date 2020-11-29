@@ -12,7 +12,7 @@ Home Page | Filter Sheet | Search Bar
 ### Source of the questions data
 * Web scrapping (BeautifulSoup) has been used to scrap data from [Leetcode](https://leetcode.com/problemset/all/) and it has been uploaded to my firebase realtime database. Currently there are around 250 questions in firebase database.
 * So now this app is loading questions from firebase realtime database.
-* Each question contains following data : title, id, company tags, topics, difficulty level, frequency and description(in HTML format).
+* Each question contains following data : title, id, company tags, topics, difficulty level, frequency and description(in HTML format so that styling and expressions can be retained).
 
 ### Current Features
 1. **Display coding questions** - Questions are being displayed from firebase realtime database.
@@ -26,6 +26,9 @@ Home Page | Filter Sheet | Search Bar
 2. Firebase Realtime Database.
 4. Python
 5. BeautifulSoup
+
+### Link to Coding Questions Scrapper
+In case if you are interested Go to [Coding Questions Scrapper](https://github.com/divyeshvala/Coding-Questions-Scrapper) repository.
 
 ### Contributors
 * [Divyesh Vala](https://github.com/divyeshvala)
