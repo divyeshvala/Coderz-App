@@ -31,6 +31,7 @@ public class Constants
         colorMap.put("Internship", Color.parseColor("#F8B195"));
         colorMap.put("Interview", Color.parseColor("#283655"));
         colorMap.put("Front End Developer", Color.parseColor("#A7226E"));
+        colorMap.put("Offcampus", Color.parseColor("#12232E"));
 
 
         // Companies Tags
@@ -40,7 +41,7 @@ public class Constants
         colorMap.put("Visa", Color.parseColor("#3d2352"));
         colorMap.put("Amazon", Color.parseColor("#8d5524"));
         colorMap.put("Demux Academy", Color.parseColor("#011f4b"));
-        colorMap.put("Goldman", Color.parseColor("#03396c"));
+        colorMap.put("Goldman Sachs", Color.parseColor("#03396c"));
         colorMap.put("DE Shaw", Color.parseColor("#64a1f4"));
         colorMap.put("Uber", Color.parseColor("#6497b1"));
         colorMap.put("Cisco", Color.parseColor("#3da4ab"));
@@ -50,7 +51,14 @@ public class Constants
         colorMap.put("Oracle", Color.parseColor("#dfa290"));
         colorMap.put("Barco", Color.parseColor("#A8E6CE"));
         colorMap.put("Paytm", Color.parseColor("#355C7D"));
-        colorMap.put("Microsoft", Color.parseColor("#F8B195"));
+        colorMap.put("Microsoft", Color.parseColor("#12232E"));
+        colorMap.put("Citrix", Color.parseColor("#3C1874"));
+        colorMap.put("Barclays", Color.parseColor("#4D774E"));
+        colorMap.put("Myntra", Color.parseColor("#004E7C"));
+        colorMap.put("Citi", Color.parseColor("#007CC7"));
+        colorMap.put("Flipkart", Color.parseColor("#5C5F58"));
+        colorMap.put("Morgan Stanley", Color.parseColor("#266150"));
+        colorMap.put("Sprinklr", Color.parseColor("#4DA8DA"));
 
         for(Map.Entry<String, Integer> entry : colorMap.entrySet())
         {
@@ -90,7 +98,7 @@ public class Constants
             if(colorMap.containsKey(tag))
                 tagColorsList.add(new int[]{ colorMap.get(tag), Color.parseColor("#000000"), Color.parseColor("#ffffff"), Color.parseColor("#999999") });
             else
-                tagColorsList.add(new int[]{ Color.parseColor("#000000"), Color.parseColor("#000000"), Color.parseColor("#ffffff"), Color.parseColor("#999999") });
+                tagColorsList.add(new int[]{ Color.parseColor("#ffffff"), Color.parseColor("#555555"), Color.parseColor("#000000"), Color.parseColor("#999999") });
         }
         return tagColorsList;
     }

@@ -21,4 +21,8 @@
     <color name="deepRed">#A50704</color>
     <color name="yellow">#faaa13</color>
     <color name="white">#ffffff</color>
+
+    <color name="hardColor">#630806</color>
+    <color name="mediumColor">#916D03</color>
+    <color name="easyColor">#054E08</color>
 </resources>

@@ -5,6 +5,6 @@
 
     <solid android:color="@color/colorPurpleDark" />
     <corners
-        android:topLeftRadius="20dp"
-        android:topRightRadius="20dp" />
+        android:topLeftRadius="@dimen/bottom_sheet_top_radius"
+        android:topRightRadius="@dimen/bottom_sheet_top_radius" />
 </shape>

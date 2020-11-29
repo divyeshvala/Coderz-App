@@ -10,39 +10,74 @@
     card_view:cardCornerRadius="@dimen/card_radius">
 
     <RelativeLayout
+        android:id="@+id/card_inner_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:id="@+id/layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:baselineAligned="false"
             >
-            <TextView
-                android:id="@+id/title"
+            <RelativeLayout
+                android:layout_weight="0.8"
                 android:layout_width="0dp"
-                android:layout_weight="0.85"
                 android:layout_height="wrap_content"
-                android:paddingLeft="@dimen/card_title_padding"
-                android:paddingRight="@dimen/card_title_padding"
-                android:paddingTop="@dimen/card_title_padding"
-                android:textColor="@color/card_title"
-                android:textSize="@dimen/card_title_size"
-                android:text="Traffic Light Controlled Intersection"
-                />
-            <TextView
-                android:id="@+id/frequency"
+                >
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/card_title_padding"
+                    android:paddingRight="@dimen/card_title_padding"
+                    android:paddingTop="@dimen/card_title_padding"
+                    android:textColor="@color/card_title"
+                    android:textSize="@dimen/card_title_size"
+                    />
+
+                <co.lujun.androidtagview.TagContainerLayout
+                    android:id="@+id/topics_container_layout"
+                    android:layout_below="@id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/tag_container_padding"
+                    />
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_weight="0.2"
                 android:layout_width="0dp"
-                android:layout_weight="0.15"
                 android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:textColor="@color/colorPurpleDark"
-                android:text="45"
-                android:layout_marginEnd="5dp"
-                android:textSize="14sp"
-                android:background="@drawable/frequency_background"
-                />
+                >
+                <TextView
+                    android:id="@+id/frequency"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:textColor="@color/colorPurpleDark"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
+                    android:textSize="14sp"
+                    android:background="@drawable/frequency_background"
+                    />
+
+                <TextView
+                    android:id="@+id/id_difficulty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/frequency"
+                    android:layout_centerHorizontal="true"
+                    android:textSize="13sp"
+                    android:textAlignment="center"
+                    android:textAllCaps="false"
+                    android:background="#543302"
+                    android:textColor="#fff"
+                    android:padding="5dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="5dp"
+                    />
+            </RelativeLayout>
         </LinearLayout>
 
         <co.lujun.androidtagview.TagContainerLayout
@@ -50,8 +85,7 @@
             android:layout_below="@id/layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="0dp"
-            android:padding="10dp"
+            android:padding="@dimen/tag_container_padding"
             />
 
     </RelativeLayout>
