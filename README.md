@@ -10,7 +10,7 @@ Home Page | Filter Sheet | Search Bar
 * There is screen recording in screenshots directory. You can download it and watch it.
 
 ### Source of the questions data
-* Web scrapping (BeautifulSoup) has been used to scrap data from Leetcode and it has been uploaded to my firebase realtime database. Currently there are around 250 questions in firebase database.
+* Web scrapping (BeautifulSoup) has been used to scrap data from [Leetcode](https://leetcode.com/problemset/all/) and it has been uploaded to my firebase realtime database. Currently there are around 250 questions in firebase database.
 * So now this app is loading questions from firebase realtime database.
 * Each question contains following data : title, id, company tags, topics, difficulty level, frequency and description(in HTML format).
 
