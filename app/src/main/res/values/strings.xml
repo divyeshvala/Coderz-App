@@ -1,9 +1,15 @@
 <resources>
     <string name="app_name">Demux Academy</string>
     <string name="home_title">Interview Questions</string>
-
-
+    <string name="search_title">Search</string>
     <string name="difficulty_easy">Easy</string>
     <string name="difficulty_medium">Medium</string>
     <string name="difficulty_hard">Hard</string>
+    <string name="header_questions">Questions &amp; Tags</string>
+    <string name="header_frequency">Frequency</string>
+    <string name="title_no_results">No results found</string>
+    <string name="text_filter">Filter</string>
+    <string name="apply_button_text">Apply</string>
+    <string name="category_general_title">General</string>
+    <string name="category_company_title">Companies</string>
 </resources>

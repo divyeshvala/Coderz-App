@@ -1,5 +1,8 @@
 package com.example.demux;
 
+/**
+ * It is an object which contains all the details about the question.
+ */
 public class Question
 {
     String title;
@@ -9,6 +12,18 @@ public class Question
     int difficultyLevel;
     int frequency;
     int questionId;
+
+    /**
+     * It returns the Question object containing following properties.
+     *
+     * @param title     title of the question
+     * @param descriptionHTML      description of the question as HTML
+     * @param topics     string containing coma separated topics related to question
+     * @param tags       string containing coma separated tags related to question
+     * @param difficultyLevel     difficulty level of question : [ 1-easy, 2-medium, 3-hard ]
+     * @param frequency      number of times the question has been asked
+     * @param questionId    unique id of the question
+     */
 
     public Question(String title, String descriptionHTML, String topics, String tags, int difficultyLevel, int frequency, int questionId) {
         this.title = title;

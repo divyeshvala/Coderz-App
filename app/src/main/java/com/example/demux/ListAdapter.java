@@ -25,6 +25,13 @@ public class ListAdapter extends RecyclerView.Adapter< ListAdapter.QuestionListV
     private final Context context;
     private final FilterInterface listener;
 
+    /**
+     * It return adapter for the recycler view.
+     *
+     * @param context     context of the activity that is initializing the adapter
+     * @param questionList      list of the questions to be displayed
+     * @param listener     listner through which apply filter function can be called
+     */
     public ListAdapter(Context context, ArrayList<Question> questionList, FilterInterface listener)
     {
         this.questionList = questionList;

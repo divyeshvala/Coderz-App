@@ -19,14 +19,14 @@
             android:layout_width="0dp"
             android:layout_weight="0.6"
             android:layout_height="wrap_content"
-            android:text="Questions &amp; Tags"
+            android:text="@string/header_questions"
             android:textColor="#162266"
             />
         <TextView
             android:layout_width="0dp"
             android:layout_weight="0.4"
             android:layout_height="wrap_content"
-            android:text="Frequency"
+            android:text="@string/header_frequency"
             android:textAlignment="textEnd"
             android:textColor="#162266"
             />
@@ -41,20 +41,11 @@
         android:layout_above="@id/progress_bar"
         />
 
-<!--    <ProgressBar-->
-<!--        android:id="@+id/initial_progress_bar"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_gravity="center"-->
-<!--        android:layout_centerInParent="true"-->
-<!--        android:indeterminateTint="#2846EB"-->
-<!--        />-->
-
     <TextView
         android:id="@+id/id_no_results"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No results found."
+        android:text="@string/title_no_results"
         android:layout_centerInParent="true"
         android:textSize="17sp"
         android:visibility="gone"
@@ -85,6 +76,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
+        android:contentDescription="@string/text_filter"
         app:srcCompat="@drawable/ic_baseline_filter_list_24"
         app:backgroundTint="@color/yellow"
         app:tint="@color/white"/>

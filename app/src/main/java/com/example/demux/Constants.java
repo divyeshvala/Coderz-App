@@ -1,12 +1,14 @@
 package com.example.demux;
 
 import android.graphics.Color;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * It contains all the constants frequently used by the application.
+ */
 public class Constants
 {
     public static Map<String, Integer> colorMap = new HashMap<>();
@@ -27,12 +29,11 @@ public class Constants
 
         colorMap.put("College", Color.parseColor("#355C7D"));
         colorMap.put("Software Developer", Color.parseColor("#7bc043"));
-        colorMap.put("Full-time", Color.parseColor("#283655"));
+        colorMap.put("Full-time", Color.parseColor("#bd33a4"));
         colorMap.put("Internship", Color.parseColor("#F8B195"));
         colorMap.put("Interview", Color.parseColor("#283655"));
         colorMap.put("Front End Developer", Color.parseColor("#A7226E"));
         colorMap.put("Offcampus", Color.parseColor("#12232E"));
-
 
         // Companies Tags
         colorMap.put("Google", Color.parseColor("#fe4a49"));

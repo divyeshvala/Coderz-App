@@ -12,7 +12,7 @@
         android:id="@+id/id_filter_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Filters"
+        android:text="@string/text_filter"
         android:textColor="@color/white"
         android:textStyle="bold"
         android:textSize="24sp"
@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/button_background"
         android:layout_alignParentEnd="true"
-        android:text="Apply"
+        android:text="@string/apply_button_text"
         android:textSize="16sp"
         android:textColor="#fff"
         android:textAllCaps="false"
@@ -46,14 +46,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="General"
+                android:text="@string/category_general_title"
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 />
 
             <co.lujun.androidtagview.TagContainerLayout
                 android:id="@+id/filter_tag_container_layout_general"
-                android:layout_below="@id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -64,7 +63,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Companies"
+                android:text="@string/category_company_title"
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:layout_marginTop="24dp"
@@ -72,7 +71,6 @@
 
             <co.lujun.androidtagview.TagContainerLayout
                 android:id="@+id/filter_tag_container_layout_companies"
-                android:layout_below="@id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="0dp"

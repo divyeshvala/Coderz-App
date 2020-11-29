@@ -100,22 +100,8 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
             }
         });
 
+        // start loading questions from database.
         loadFirstSetOfQuestions();
-
-        // todo: remove it later
-//        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot)
-//            {
-//                Log.i("MainActivity","---------"+dataSnapshot.getChildrenCount());
-//                Toast.makeText(MainActivity.this, ""+dataSnapshot.getChildrenCount(), Toast.LENGTH_LONG).show();
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
     }
 
     /**
@@ -403,5 +389,6 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
             finish();
             startActivity(getIntent());
         }
+        super.onBackPressed();
     }
 }
