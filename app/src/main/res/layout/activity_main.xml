@@ -78,6 +78,6 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/text_filter"
         app:srcCompat="@drawable/ic_baseline_filter_list_24"
-        app:backgroundTint="@color/yellow"
+        app:backgroundTint="@color/floatingButtonColor"
         app:tint="@color/white"/>
 </RelativeLayout>

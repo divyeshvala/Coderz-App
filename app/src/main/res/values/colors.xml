@@ -25,4 +25,6 @@
     <color name="hardColor">#630806</color>
     <color name="mediumColor">#916D03</color>
     <color name="easyColor">#054E08</color>
+
+    <color name="floatingButtonColor">#034880</color>
 </resources>
