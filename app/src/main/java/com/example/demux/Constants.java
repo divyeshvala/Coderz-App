@@ -19,6 +19,8 @@ public class Constants
 
     public Constants()
     {
+        if(!generalTagsList.isEmpty())
+            return;
         // General Tags
         generalTagsList.add("College");
         generalTagsList.add("Software Developer");
