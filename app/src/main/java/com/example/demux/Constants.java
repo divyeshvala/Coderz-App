@@ -41,7 +41,6 @@ public class Constants
         colorMap.put("SAP Labs", Color.parseColor("#A7226E"));
         colorMap.put("Visa", Color.parseColor("#3d2352"));
         colorMap.put("Amazon", Color.parseColor("#8d5524"));
-        colorMap.put("Demux Academy", Color.parseColor("#011f4b"));
         colorMap.put("Goldman Sachs", Color.parseColor("#03396c"));
         colorMap.put("DE Shaw", Color.parseColor("#64a1f4"));
         colorMap.put("Uber", Color.parseColor("#6497b1"));
@@ -60,6 +59,7 @@ public class Constants
         colorMap.put("Flipkart", Color.parseColor("#5C5F58"));
         colorMap.put("Morgan Stanley", Color.parseColor("#266150"));
         colorMap.put("Sprinklr", Color.parseColor("#4DA8DA"));
+        colorMap.put("Demux Academy", Color.parseColor("#011f4b"));
 
         for(Map.Entry<String, Integer> entry : colorMap.entrySet())
         {

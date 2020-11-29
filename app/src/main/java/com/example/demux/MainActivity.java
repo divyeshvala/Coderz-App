@@ -10,15 +10,12 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
@@ -36,9 +33,6 @@ import co.lujun.androidtagview.TagView;
 
 import static java.sql.Types.NULL;
 
-// TODO: order by frequency.
-// TODO: Search problem - optional.
-
 public class MainActivity extends AppCompatActivity implements FilterInterface
 {
     private ArrayList<Question> questionsList;   // list questions to display
@@ -54,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
     private  SearchView searchView;
     final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("questions");
 
-    @RequiresApi(api = Build.VERSION_CODES.M)  // todo
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
