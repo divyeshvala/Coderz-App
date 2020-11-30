@@ -1,4 +1,4 @@
-package com.example.demux;
+package com.example.demux.Objects;
 
 /**
  * It is an object which contains all the details about the question.

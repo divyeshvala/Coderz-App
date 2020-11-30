@@ -1,4 +1,4 @@
-package com.example.demux;
+package com.example.demux.Activities;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -10,13 +10,18 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.example.demux.utilities.FilterInterface;
+import com.example.demux.utilities.ListAdapter;
+import com.example.demux.Objects.Question;
+import com.example.demux.R;
+import com.example.demux.utilities.Constants;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
@@ -39,7 +44,8 @@ import static com.example.demux.utilities.Cache.loadedQuestionsIdList;
 public class MainActivity extends AppCompatActivity implements FilterInterface
 {
     private ArrayList<Question> questionsList;   // list questions to display
-    final private int QUESTION_CHUNK_SIZE = 10;       // number of questions to be loaded at a time
+    private int QUESTION_CHUNK_SIZE = 10;       // number of questions to be loaded at a time
+    final private int DELAY_BEFORE_NEXT_CHUNK = 300;  // delay in milli sec before loading next chunk of question
     private int lastVisibleItem, currentVisibleItem;  // index of visible items in list to keep track of scrolling
     private ListAdapter listAdapter;    // Adapter for recycler view
     private String searchQuery;
@@ -51,9 +57,7 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
     private  SearchView searchView;
     private ArrayList<String> questionIdList;
     private MenuItem menuItem;
-    final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("coding"); //todo
-
-    private RecyclerView recyclerView;
+    final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("questions");
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -74,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
         lastVisibleItem = 0;
         isEndOfDatabase = false;
         FloatingActionButton filter = findViewById(R.id.id_filter);
-        recyclerView = findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
         layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
@@ -91,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
         recyclerView.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
             if(currentVisibleItem!=-1 && layoutManager.findLastCompletelyVisibleItemPosition()<=currentVisibleItem)
                 return;
-            Log.i("Main", currentVisibleItem+", "+lastVisibleItem+", "+isEndOfDatabase);
             currentVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
             // if current item is last visible item then load more data
             if(!isEndOfDatabase && currentVisibleItem+1==lastVisibleItem)
@@ -243,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
                 if(!isEndOfDatabase)
                     getQuestions();
             }
-        }, 500);
+        }, DELAY_BEFORE_NEXT_CHUNK);
     }
 
     /**
@@ -362,6 +365,7 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
                 searchView.setQuery(String.valueOf(filteredTagsList), false);
                 searchView.clearFocus();
                 resetParameters();
+                QUESTION_CHUNK_SIZE = 20;
                 getQuestions();
             }
         });
@@ -389,6 +393,7 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
                 // remove old filters if there are any.
                 filteredTagsList.clear();
                 resetParameters();
+                QUESTION_CHUNK_SIZE = 20;
                 // load questions containing this search query.
                 getQuestions();
                 return false;
@@ -418,6 +423,7 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
         filteredTagsList.clear();
         filteredTagsList.add(tag.toLowerCase());
         resetParameters();
+        QUESTION_CHUNK_SIZE = 20;
         getQuestions();
     }
 }
