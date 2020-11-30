@@ -26,32 +26,34 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import co.lujun.androidtagview.ColorFactory;
 import co.lujun.androidtagview.TagContainerLayout;
 import co.lujun.androidtagview.TagView;
 
-// todo: store already loaded questions in static list. Don't change lastFetchedQueId. use it when searching.
+import static com.example.demux.utilities.Cache.lastDataReadIndexFromCache;
+import static com.example.demux.utilities.Cache.lastFetchedQuestionId;
+import static com.example.demux.utilities.Cache.cachedQuestionsList;
+import static com.example.demux.utilities.Cache.loadedQuestionsIdList;
 
 public class MainActivity extends AppCompatActivity implements FilterInterface
 {
-    private static ArrayList<String> questionIdList;
-
     private ArrayList<Question> questionsList;   // list questions to display
-    private static int lastVisibleItem, currentVisibleItem;  // index of visible items in list to keep track of scrolling
+    final private int QUESTION_CHUNK_SIZE = 10;       // number of questions to be loaded at a time
+    private int lastVisibleItem, currentVisibleItem;  // index of visible items in list to keep track of scrolling
     private ListAdapter listAdapter;    // Adapter for recycler view
-    private static String lastFetchedQuestionId;  // Id of last fetched question from firebase
-    private static String searchQuery;
+    private String searchQuery;
     private ProgressBar progressBar;
     private ArrayList<String> filteredTagsList;   // list of tags selected in the filter
     private TextView noResults;    // TextView to show when no results found
-    private static boolean isEndOfDatabase;   // Flag to stop when end of database is reached
+    private boolean isEndOfDatabase;   // Flag to stop when end of database is reached
     private LinearLayoutManager layoutManager;  // for recycler view
     private  SearchView searchView;
+    private ArrayList<String> questionIdList;
+    private MenuItem menuItem;
     final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("coding"); //todo
+
+    private RecyclerView recyclerView;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -60,26 +62,27 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        questionIdList = new ArrayList<>();
-        lastFetchedQuestionId = null;
+        //lastFetchedQuestionId = null;
 
         // initialize all the fields
         progressBar = findViewById(R.id.progress_bar);
         noResults = findViewById(R.id.id_no_results);
         questionsList = new ArrayList<>();
+        questionIdList = new ArrayList<>();
         filteredTagsList = new ArrayList<>();
         searchQuery = "";
         lastVisibleItem = 0;
         isEndOfDatabase = false;
         FloatingActionButton filter = findViewById(R.id.id_filter);
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        recyclerView = findViewById(R.id.recycler_view);
         layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
         listAdapter = new ListAdapter(this, questionsList, this);
         recyclerView.setAdapter(listAdapter);
 
-        new Constants();  // todo
+        // initialize all the constants
+        new Constants();
 
         // listener for click on floating filter button.
         filter.setOnClickListener(v -> launchFilterSheet());
@@ -88,21 +91,12 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
         recyclerView.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
             if(currentVisibleItem!=-1 && layoutManager.findLastCompletelyVisibleItemPosition()<=currentVisibleItem)
                 return;
+            Log.i("Main", currentVisibleItem+", "+lastVisibleItem+", "+isEndOfDatabase);
             currentVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
-            Log.i("__Main__", ""+currentVisibleItem+", "+lastVisibleItem+", "+isEndOfDatabase);
-            // if current item is last visible item then loa more data
+            // if current item is last visible item then load more data
             if(!isEndOfDatabase && currentVisibleItem+1==lastVisibleItem)
             {
-                progressBar.setVisibility(View.VISIBLE);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(!isEndOfDatabase)
-                            getQuestions();
-                            //loadNextSetOfQuestions();
-
-                    }
-                }, 500);
+                loadOnScroll();
             }
         });
 
@@ -110,7 +104,11 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
         getQuestions();
     }
 
+    /**
+     * Reset all the parameters before new query search or filtering
+     */
     private void resetParameters() {
+        lastDataReadIndexFromCache = 0;
         lastVisibleItem = 0;
         currentVisibleItem=-1;
         isEndOfDatabase = false;
@@ -121,21 +119,50 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
         progressBar.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Load questions from database or from local cache if cache is not empty.
+     */
     private void getQuestions()
     {
-        Log.i("***Main###", ""+currentVisibleItem+", "+lastVisibleItem+", "+isEndOfDatabase);
+        // load from cache first. If cache is empty or exhausted then load from database.
+        if(lastDataReadIndexFromCache < cachedQuestionsList.size())
+        {
+            int count = 0, currentHitQueryCount = 0;
+            for( ; lastDataReadIndexFromCache < cachedQuestionsList.size() && count<QUESTION_CHUNK_SIZE; count++, lastDataReadIndexFromCache++)
+            {
+                Question question = cachedQuestionsList.get(lastDataReadIndexFromCache);
+                if(!questionIdList.contains(question.getQuestionId()) && doesQuestionContainsTagAndQuery(question))
+                {
+                    currentHitQueryCount++;
+                    lastVisibleItem++;
+                    questionIdList.add(question.getQuestionId());
+                    questionsList.add(question);
+                    listAdapter.notifyDataSetChanged();
+                }
+            }
+            progressBar.setVisibility(View.GONE);
+            // recycler view state will not change. So call LoadOnScroll manually.
+            if(currentHitQueryCount==0 && !isEndOfDatabase)
+            {
+                loadOnScroll();
+            }
+            return;
+        }
+
+        // If loading from cache is over then load from cloud database.
         Query query;
+        // If loading first page
         if (lastFetchedQuestionId == null) {
             resetParameters();
             query = databaseReference
                     .orderByKey()
-                    .limitToFirst(10); //todo
+                    .limitToFirst(QUESTION_CHUNK_SIZE);
         }
         else
             query = databaseReference
                     .orderByKey()
                     .startAt(lastFetchedQuestionId)
-                    .limitToFirst(10);
+                    .limitToFirst(QUESTION_CHUNK_SIZE);
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -143,9 +170,11 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
                 if(dataSnapshot.exists())
                 {
                     long count = dataSnapshot.getChildrenCount();
-                    Log.i("Main","count :"+count);
-                    if(count<10)
+                    if(count<QUESTION_CHUNK_SIZE)
+                    {
                         isEndOfDatabase = true;
+                    }
+
                     if(count==0 && questionsList.isEmpty())
                         noResults.setVisibility(View.VISIBLE);
 
@@ -153,67 +182,91 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
                     for(DataSnapshot question : dataSnapshot.getChildren())
                     {
                         lastFetchedQuestionId = question.getKey();
-                        String title = question.child("title").getValue(String.class);
-                        String tags = question.child("tags").getValue(String.class);
-                        String topics = question.child("topics").getValue(String.class);
-                        int difficultyLevel = question.child("difficulty").getValue(Integer.class);
-                        int frequency = question.child("frequency").getValue(Integer.class);
-                        int questionId = question.child("questionID").getValue(Integer.class);
+                        Question loadedQuestion = new Question(
+                                question.child("title").getValue(String.class),
+                                "",
+                                question.child("topics").getValue(String.class),
+                                question.child("tags").getValue(String.class),
+                                question.child("difficulty").getValue(Integer.class),
+                                question.child("frequency").getValue(Integer.class),
+                                lastFetchedQuestionId
+                        );
 
                         if(!questionIdList.contains(lastFetchedQuestionId))
                         {
-                            questionIdList.add(lastFetchedQuestionId);
-                            if(!filteredTagsList.isEmpty())
-                            {
-                                String tagsLowerCase = tags.toLowerCase();
-                                String topicsLowerCase = topics.toLowerCase();
-                                for(String tag : filteredTagsList)
-                                {
-                                    if(tagsLowerCase.contains(tag) || topicsLowerCase.contains(tag))
-                                    {
-                                        lastVisibleItem++;
-                                        currentHitQueryCount++;
-                                        questionsList.add(new Question(title, "", topics, tags, difficultyLevel, frequency, questionId));
-                                        listAdapter.notifyDataSetChanged();
-                                        break;
-                                    }
-                                }
-                            }
-                            else if (tags != null && title != null && (title.toLowerCase().contains(searchQuery.toLowerCase()) || tags.toLowerCase().contains(searchQuery.toLowerCase()) || topics.toLowerCase().contains(searchQuery.toLowerCase()) ))
-                            {
+                            lastDataReadIndexFromCache++;
+                            cachedQuestionsList.add(loadedQuestion);
+                            loadedQuestionsIdList.add(lastFetchedQuestionId);
+                            if(doesQuestionContainsTagAndQuery(loadedQuestion)) {
                                 lastVisibleItem++;
-                                currentHitQueryCount++;
-                                questionsList.add(new Question(title, "", topics, tags, difficultyLevel, frequency, questionId));
+                                questionIdList.add(lastFetchedQuestionId);
+                                questionsList.add(loadedQuestion);
                                 listAdapter.notifyDataSetChanged();
+                                currentHitQueryCount++;
                             }
                         }
                         count--;
                         if(count==0)
                         {
                             progressBar.setVisibility(View.GONE);
-                            // recycler view state will not change.
+                            // recycler view state will not change. So call LoadOnScroll manually.
                             if(currentHitQueryCount==0 && !isEndOfDatabase)
                             {
-                                progressBar.setVisibility(View.VISIBLE);
-                                new Handler().postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if(!isEndOfDatabase)
-                                            getQuestions();
-                                    }
-                                }, 500);
+                                loadOnScroll();
                             }
+                            if(questionsList.isEmpty() && isEndOfDatabase)
+                                noResults.setVisibility(View.VISIBLE);
                         }
                     }
+                }
+                else
+                {
+                    isEndOfDatabase = true;
+                    noResults.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
+    }
 
+    /**
+     * Load more data when user reaches end of the list.
+     */
+    private void loadOnScroll() {
+        progressBar.setVisibility(View.VISIBLE);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(!isEndOfDatabase)
+                    getQuestions();
+            }
+        }, 500);
+    }
+
+    /**
+     * It checks whether search query or filtered tag is present in the question.
+     *
+     * @param question question from database
+     * @return true if search query or filtered tag is present in the question
+     */
+    private boolean doesQuestionContainsTagAndQuery(Question question)
+    {
+        String tags = question.getTags().toLowerCase();
+        String topics = question.getTopics().toLowerCase();
+        String title = question.getTitle().toLowerCase();
+        questionIdList.add(lastFetchedQuestionId);
+        if(!filteredTagsList.isEmpty()) {
+            for (String tag : filteredTagsList) {
+                if (tags.contains(tag) || topics.contains(tag))
+                    return true;
+            }
+        }
+        else if (tags!=null && topics!=null && (title.contains(searchQuery.toLowerCase()) || tags.contains(searchQuery.toLowerCase()) || topics.contains(searchQuery.toLowerCase()) ))
+            return true;
+        return false;
     }
 
     /**
@@ -305,9 +358,10 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
             {
                 bottomSheetDialog.dismiss();
                 searchQuery = "";
-                searchView.clearFocus();
+                menuItem.expandActionView();
                 searchView.setQuery(String.valueOf(filteredTagsList), false);
-                lastFetchedQuestionId = null;
+                searchView.clearFocus();
+                resetParameters();
                 getQuestions();
             }
         });
@@ -323,8 +377,8 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
     public boolean onCreateOptionsMenu(Menu menu)
     {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        MenuItem item = menu.findItem(R.id.action_search);
-        searchView = (SearchView) item.getActionView();
+        menuItem = menu.findItem(R.id.action_search);
+        searchView = (SearchView) menuItem.getActionView();
 
         // lister for when user searches something
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -334,14 +388,16 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
                 searchQuery = query;
                 // remove old filters if there are any.
                 filteredTagsList.clear();
+                resetParameters();
                 // load questions containing this search query.
-                lastFetchedQuestionId = null;
                 getQuestions();
                 return false;
             }
             @Override
             public boolean onQueryTextChange(String newText)
-            { return false; }
+            {
+                return false;
+            }
         });
 
         return super.onCreateOptionsMenu(menu);
@@ -355,27 +411,13 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
      */
     public void applyFilter(String tag)
     {
-        searchView.clearFocus();
+        menuItem.expandActionView();
         searchView.setQuery(tag, false);
+        searchView.clearFocus();
         searchQuery = "";
         filteredTagsList.clear();
         filteredTagsList.add(tag.toLowerCase());
-        lastFetchedQuestionId = null;
+        resetParameters();
         getQuestions();
-    }
-
-    /**
-     * If user click back after searching or applying filter then activity should
-     * get closed. Activity will get reloaded in this scenario.
-     */
-    @Override
-    public void onBackPressed()
-    {
-        if(!searchQuery.isEmpty() || !filteredTagsList.isEmpty())
-        {
-            finish();
-            startActivity(getIntent());
-        }
-        super.onBackPressed();
     }
 }

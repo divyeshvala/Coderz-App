@@ -11,12 +11,11 @@ public class Question
     String tags;
     int difficultyLevel;
     int frequency;
-    int questionId;
+    String questionId;
 
     /**
      * It returns the Question object containing following properties.
-     *
-     * @param title     title of the question
+     *  @param title     title of the question
      * @param descriptionHTML      description of the question as HTML
      * @param topics     string containing coma separated topics related to question
      * @param tags       string containing coma separated tags related to question
@@ -25,7 +24,7 @@ public class Question
      * @param questionId    unique id of the question
      */
 
-    public Question(String title, String descriptionHTML, String topics, String tags, int difficultyLevel, int frequency, int questionId) {
+    public Question(String title, String descriptionHTML, String topics, String tags, int difficultyLevel, int frequency, String questionId) {
         this.title = title;
         this.descriptionHTML = descriptionHTML;
         this.topics = topics;
@@ -59,7 +58,7 @@ public class Question
         return frequency;
     }
 
-    public int getQuestionId() {
+    public String getQuestionId() {
         return questionId;
     }
 }
