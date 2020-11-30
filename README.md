@@ -15,10 +15,12 @@ Home Page | Filter Sheet | Search Bar
 * Each question contains following data : title, id, company tags, topics, difficulty level, frequency and description(in HTML format so that styling and expressions can be retained).
 
 ### Current Features
-1. **Display coding questions** - Questions are being displayed from firebase realtime database.
+1. **Display coding questions** - Questions are being displayed from firebase realtime database. They are not hardcoded. They are real questions from leetcode.
+2. **Optimized loading, search and filtering** - Once the question is loaded from the firebase it will be stored locally. And that local data will be used for faster searching and filtering.
 2. **Company & topic tags** - There are company & topic tags on the question which are clickable. On clicking tag, relevant questions will be displayed. Each company has specific colored tag for better user experience.
 3. **Filter** - Questions can be filtered based on single or mutliple companies and other general tags like College, Offcampus, Internship, Full-time etc.
-4. **Search** - Questions can be searched based on title and tags.
+4. **Search** - Questions can be searched based on title, tags and topics.
+
 
 ### Technology and frameworks used
 1. Java.
