@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,19 +23,23 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import co.lujun.androidtagview.ColorFactory;
 import co.lujun.androidtagview.TagContainerLayout;
 import co.lujun.androidtagview.TagView;
 
-import static java.sql.Types.NULL;
+// todo: store already loaded questions in static list. Don't change lastFetchedQueId. use it when searching.
 
 public class MainActivity extends AppCompatActivity implements FilterInterface
 {
+    private static ArrayList<String> questionIdList;
+
     private ArrayList<Question> questionsList;   // list questions to display
     private static int lastVisibleItem, currentVisibleItem;  // index of visible items in list to keep track of scrolling
     private ListAdapter listAdapter;    // Adapter for recycler view
@@ -46,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
     private static boolean isEndOfDatabase;   // Flag to stop when end of database is reached
     private LinearLayoutManager layoutManager;  // for recycler view
     private  SearchView searchView;
-    final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("questions");
+    final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("coding"); //todo
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -54,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        questionIdList = new ArrayList<>();
+        lastFetchedQuestionId = null;
 
         // initialize all the fields
         progressBar = findViewById(R.id.progress_bar);
@@ -71,159 +79,141 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
         listAdapter = new ListAdapter(this, questionsList, this);
         recyclerView.setAdapter(listAdapter);
 
-        Constants constants = new Constants();  // todo
+        new Constants();  // todo
 
         // listener for click on floating filter button.
         filter.setOnClickListener(v -> launchFilterSheet());
 
         // listener for scrolling - [ Load data on scroll ]
         recyclerView.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if(currentVisibleItem!=-1 && layoutManager.findLastCompletelyVisibleItemPosition()<=currentVisibleItem)
+                return;
             currentVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
-
+            Log.i("__Main__", ""+currentVisibleItem+", "+lastVisibleItem+", "+isEndOfDatabase);
             // if current item is last visible item then loa more data
-            if(!isEndOfDatabase && currentVisibleItem+1>=lastVisibleItem)
+            if(!isEndOfDatabase && currentVisibleItem+1==lastVisibleItem)
             {
                 progressBar.setVisibility(View.VISIBLE);
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         if(!isEndOfDatabase)
-                            loadNextSetOfQuestions();
+                            getQuestions();
+                            //loadNextSetOfQuestions();
+
                     }
                 }, 500);
             }
         });
 
         // start loading questions from database.
-        loadFirstSetOfQuestions();
+        getQuestions();
     }
 
-    /**
-     *  Reset some fields.
-     *  Load first set of (10) questions from database.
-     */
-    private void loadFirstSetOfQuestions()
-    {
+    private void resetParameters() {
         lastVisibleItem = 0;
+        currentVisibleItem=-1;
         isEndOfDatabase = false;
+        questionIdList.clear();
         questionsList.clear();
         listAdapter.notifyDataSetChanged();
         noResults.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
-
-        databaseReference.orderByKey().limitToFirst(10).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot)
-            {
-                displayQuestions(dataSnapshot, false);
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
-        });
     }
 
-    /**
-     * Traverse through the children (questions) of dataSnapshot and if the searchQuery or filtered tags
-     * are present into the children then add it to the questions list and display it.
-     *
-     * @param dataSnapshot     reference of the questions in database.
-     * @param isSkipFirst      whether first item should be skipped or not.
-     */
-    private void displayQuestions(DataSnapshot dataSnapshot, boolean isSkipFirst)
+    private void getQuestions()
     {
-
-        long count = dataSnapshot.getChildrenCount();
-        // if number of children is 1 and or zero it means we reached end of the database
-        if(count==0 || (isSkipFirst && count==1))
-        {
-            isEndOfDatabase = true;
-            progressBar.setVisibility(View.GONE);
-            if(questionsList.isEmpty())
-                noResults.setVisibility(View.VISIBLE);
+        Log.i("***Main###", ""+currentVisibleItem+", "+lastVisibleItem+", "+isEndOfDatabase);
+        Query query;
+        if (lastFetchedQuestionId == null) {
+            resetParameters();
+            query = databaseReference
+                    .orderByKey()
+                    .limitToFirst(10); //todo
         }
-        int successCount = 0;  // count of hit queries
-        for (DataSnapshot question : dataSnapshot.getChildren())
-        {
-            if(isSkipFirst && count==dataSnapshot.getChildrenCount()){
-                count--;
-                continue;
-            }
-            lastFetchedQuestionId = question.getKey();
-            String title = question.child("title").getValue(String.class);
-            String tags = question.child("tags").getValue(String.class);
-            String topics = question.child("topics").getValue(String.class);
-            int difficultyLevel = question.child("difficulty").getValue(Integer.class);
-            int frequency = question.child("frequency").getValue(Integer.class);
-            int questionId = question.child("questionID").getValue(Integer.class);
+        else
+            query = databaseReference
+                    .orderByKey()
+                    .startAt(lastFetchedQuestionId)
+                    .limitToFirst(10);
 
-            if(!filteredTagsList.isEmpty())
-            {
-                String tagsLowerCase = tags.toLowerCase();
-                String topicsLowerCase = topics.toLowerCase();
-                for(String tag : filteredTagsList)
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists())
                 {
-                    if(tagsLowerCase.contains(tag) || topicsLowerCase.contains(tag))
-                    {
-                        successCount++;
-                        questionsList.add(new Question(title, "", topics, tags, difficultyLevel, frequency, questionId));
-                        lastVisibleItem++;
-                        listAdapter.notifyDataSetChanged();
-                        break;
-                    }
-                }
-            }
-            else if (tags != null && title != null && (title.toLowerCase().contains(searchQuery.toLowerCase()) || tags.toLowerCase().contains(searchQuery.toLowerCase()) || topics.toLowerCase().contains(searchQuery.toLowerCase()) ))
-            {
-                successCount++;
-                questionsList.add(new Question(title, "", topics, tags, difficultyLevel, frequency, questionId));
-                lastVisibleItem++;
-                listAdapter.notifyDataSetChanged();
-            }
-
-            count--;
-            if( count == 0 )
-            {
-                progressBar.setVisibility(View.GONE);
-                if(dataSnapshot.getChildrenCount()<10)
-                {
-                    isEndOfDatabase = true;
-                    if(questionsList.isEmpty())
-                    {
+                    long count = dataSnapshot.getChildrenCount();
+                    Log.i("Main","count :"+count);
+                    if(count<10)
+                        isEndOfDatabase = true;
+                    if(count==0 && questionsList.isEmpty())
                         noResults.setVisibility(View.VISIBLE);
-                    }
-                }
-                else if(successCount==0)
-                {
-                    currentVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
-                    if(currentVisibleItem+1>=lastVisibleItem)
-                    {
-                        progressBar.setVisibility(View.VISIBLE);
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                loadNextSetOfQuestions();
-                            }
-                        }, 1000);
-                    }
-                }
-            }
-        }
-    }
 
-    /**
-     *  Load next set of (10) questions from database.
-     */
-    private void loadNextSetOfQuestions()
-    {
-        databaseReference.orderByKey().startAt(lastFetchedQuestionId).limitToFirst(11).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot)
-            {
-                displayQuestions(dataSnapshot, true);
+                    int currentHitQueryCount = 0;
+                    for(DataSnapshot question : dataSnapshot.getChildren())
+                    {
+                        lastFetchedQuestionId = question.getKey();
+                        String title = question.child("title").getValue(String.class);
+                        String tags = question.child("tags").getValue(String.class);
+                        String topics = question.child("topics").getValue(String.class);
+                        int difficultyLevel = question.child("difficulty").getValue(Integer.class);
+                        int frequency = question.child("frequency").getValue(Integer.class);
+                        int questionId = question.child("questionID").getValue(Integer.class);
+
+                        if(!questionIdList.contains(lastFetchedQuestionId))
+                        {
+                            questionIdList.add(lastFetchedQuestionId);
+                            if(!filteredTagsList.isEmpty())
+                            {
+                                String tagsLowerCase = tags.toLowerCase();
+                                String topicsLowerCase = topics.toLowerCase();
+                                for(String tag : filteredTagsList)
+                                {
+                                    if(tagsLowerCase.contains(tag) || topicsLowerCase.contains(tag))
+                                    {
+                                        lastVisibleItem++;
+                                        currentHitQueryCount++;
+                                        questionsList.add(new Question(title, "", topics, tags, difficultyLevel, frequency, questionId));
+                                        listAdapter.notifyDataSetChanged();
+                                        break;
+                                    }
+                                }
+                            }
+                            else if (tags != null && title != null && (title.toLowerCase().contains(searchQuery.toLowerCase()) || tags.toLowerCase().contains(searchQuery.toLowerCase()) || topics.toLowerCase().contains(searchQuery.toLowerCase()) ))
+                            {
+                                lastVisibleItem++;
+                                currentHitQueryCount++;
+                                questionsList.add(new Question(title, "", topics, tags, difficultyLevel, frequency, questionId));
+                                listAdapter.notifyDataSetChanged();
+                            }
+                        }
+                        count--;
+                        if(count==0)
+                        {
+                            progressBar.setVisibility(View.GONE);
+                            // recycler view state will not change.
+                            if(currentHitQueryCount==0 && !isEndOfDatabase)
+                            {
+                                progressBar.setVisibility(View.VISIBLE);
+                                new Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if(!isEndOfDatabase)
+                                            getQuestions();
+                                    }
+                                }, 500);
+                            }
+                        }
+                    }
+                }
             }
+
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
         });
+
     }
 
     /**
@@ -317,7 +307,8 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
                 searchQuery = "";
                 searchView.clearFocus();
                 searchView.setQuery(String.valueOf(filteredTagsList), false);
-                loadFirstSetOfQuestions();
+                lastFetchedQuestionId = null;
+                getQuestions();
             }
         });
 
@@ -344,7 +335,8 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
                 // remove old filters if there are any.
                 filteredTagsList.clear();
                 // load questions containing this search query.
-                loadFirstSetOfQuestions();
+                lastFetchedQuestionId = null;
+                getQuestions();
                 return false;
             }
             @Override
@@ -368,7 +360,8 @@ public class MainActivity extends AppCompatActivity implements FilterInterface
         searchQuery = "";
         filteredTagsList.clear();
         filteredTagsList.add(tag.toLowerCase());
-        loadFirstSetOfQuestions();
+        lastFetchedQuestionId = null;
+        getQuestions();
     }
 
     /**
